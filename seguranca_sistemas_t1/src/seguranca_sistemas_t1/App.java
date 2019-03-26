@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,21 +19,19 @@ import java.util.Map;
 //Dado o a maior probabilidade, divide o texto em X Vigenere Columns, onde X é o tamanho da chave mais provável
 public class App {
 
-	private static App app = new App(); 	
+	private static App app = new App();
 	private StringBuilder sb = new StringBuilder();
-	
+
 	private String text = "Empty Text";
-	private Map<String,Integer> letterFrequency;
+	private Map<String, Integer> letterFrequency;
 	private List<Integer> iCArray;
-	
-	
-	private char[] alphabet = {
-			'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-			'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
-			};
+
+	private String[] alphabet = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q",
+			"r", "s", "t", "u", "v", "w", "x", "y", "z" };
+	private int[] frequency = new int[alphabet.length];
+
 	private int N;
-	
-	
+
 	/**
 	 * @param args
 	 */
@@ -41,12 +40,40 @@ public class App {
 		// app.readFile(new File(args[0]));
 		app.readFile(new File("DemCifrado.txt"));
 		System.out.println(app.text);
-		
+
 		app.N = app.text.length();
-		
+
 		for (int i = 0; i < app.text.length(); i++) {
 			char c = app.text.charAt(i);
-		} 
+		}
+
+		app.letterFrequency = new HashMap<>();
+		app.letterFrequency.put("a", 0);
+		app.letterFrequency.put("b", 0);
+		app.letterFrequency.put("c", 0);
+		app.letterFrequency.put("d", 0);
+		app.letterFrequency.put("e", 0);
+		app.letterFrequency.put("f", 0);
+		app.letterFrequency.put("g", 0);
+		app.letterFrequency.put("h", 0);
+		app.letterFrequency.put("i", 0);
+		app.letterFrequency.put("j", 0);
+		app.letterFrequency.put("k", 0);
+		app.letterFrequency.put("l", 0);
+		app.letterFrequency.put("m", 0);
+		app.letterFrequency.put("n", 0);
+		app.letterFrequency.put("o", 0);
+		app.letterFrequency.put("p", 0);
+		app.letterFrequency.put("q", 0);
+		app.letterFrequency.put("r", 0);
+		app.letterFrequency.put("s", 0);
+		app.letterFrequency.put("t", 0);
+		app.letterFrequency.put("u", 0);
+		app.letterFrequency.put("v", 0);
+		app.letterFrequency.put("w", 0);
+		app.letterFrequency.put("x", 0);
+		app.letterFrequency.put("y", 0);
+		app.letterFrequency.put("z", 0);
 
 		/*
 		 * For each iteration: 1- Iteratively divide text into columns of increasing
@@ -58,11 +85,20 @@ public class App {
 		 * each column using frequency analysis and the correlation of frequency
 		 */
 	}
-	
-	//public int 
 
-	public void indexOfCoincidence() {
-		return ;
+	// public int
+
+	public int indexOfCoincidence(String[] column) {
+		int numerator = 0;
+		for (int i = 0; i < column.length; i++) {
+			letterFrequency.put(column[i], letterFrequency.get(column[i])+1);
+		}
+		for (int i = 0; i < alphabet.length; i++) {
+			numerator += letterFrequency.get(alphabet[i]) * (letterFrequency.get(alphabet[i]) - 1);
+			letterFrequency.put(alphabet[i], 0);
+		}
+		// Retorna o índice de coicidencia de uma coluna
+		return numerator / (N * (N - 1) / alphabet.length);
 	}
 
 	public void readFile(File file) {
