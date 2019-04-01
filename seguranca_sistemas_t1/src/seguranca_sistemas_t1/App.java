@@ -22,15 +22,17 @@ public class App {
 	private static App app = new App();
 	private StringBuilder sb = new StringBuilder();
 
+	private Map<Character, Integer> letterFrequency;
+
+	private Character[] alphabet = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+			'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
+
 	private String text = "Empty Text";
-	private Map<String, Integer> letterFrequency;
-	private List<Integer> iCArray;
-
-	private String[] alphabet = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q",
-			"r", "s", "t", "u", "v", "w", "x", "y", "z" };
-	private int[] frequency = new int[alphabet.length];
-
 	private int N;
+	private Map<Integer, ArrayList<Character>> matrix;
+
+	private ListOfKeys listOfKeys = new ListOfKeys();
+	int count = 0;
 
 	/**
 	 * @param args
@@ -39,42 +41,41 @@ public class App {
 
 		// app.readFile(new File(args[0]));
 		app.readFile(new File("DemCifrado.txt"));
-		System.out.println(app.text);
+		// System.out.println(app.text);
 
 		app.N = app.text.length();
 
-		for (int i = 0; i < app.text.length(); i++) {
-			char c = app.text.charAt(i);
-		}
-
 		app.letterFrequency = new HashMap<>();
-		app.letterFrequency.put("a", 0);
-		app.letterFrequency.put("b", 0);
-		app.letterFrequency.put("c", 0);
-		app.letterFrequency.put("d", 0);
-		app.letterFrequency.put("e", 0);
-		app.letterFrequency.put("f", 0);
-		app.letterFrequency.put("g", 0);
-		app.letterFrequency.put("h", 0);
-		app.letterFrequency.put("i", 0);
-		app.letterFrequency.put("j", 0);
-		app.letterFrequency.put("k", 0);
-		app.letterFrequency.put("l", 0);
-		app.letterFrequency.put("m", 0);
-		app.letterFrequency.put("n", 0);
-		app.letterFrequency.put("o", 0);
-		app.letterFrequency.put("p", 0);
-		app.letterFrequency.put("q", 0);
-		app.letterFrequency.put("r", 0);
-		app.letterFrequency.put("s", 0);
-		app.letterFrequency.put("t", 0);
-		app.letterFrequency.put("u", 0);
-		app.letterFrequency.put("v", 0);
-		app.letterFrequency.put("w", 0);
-		app.letterFrequency.put("x", 0);
-		app.letterFrequency.put("y", 0);
-		app.letterFrequency.put("z", 0);
+		app.letterFrequency.put('a', 0);
+		app.letterFrequency.put('b', 0);
+		app.letterFrequency.put('c', 0);
+		app.letterFrequency.put('d', 0);
+		app.letterFrequency.put('e', 0);
+		app.letterFrequency.put('f', 0);
+		app.letterFrequency.put('g', 0);
+		app.letterFrequency.put('h', 0);
+		app.letterFrequency.put('i', 0);
+		app.letterFrequency.put('j', 0);
+		app.letterFrequency.put('k', 0);
+		app.letterFrequency.put('l', 0);
+		app.letterFrequency.put('m', 0);
+		app.letterFrequency.put('n', 0);
+		app.letterFrequency.put('o', 0);
+		app.letterFrequency.put('p', 0);
+		app.letterFrequency.put('q', 0);
+		app.letterFrequency.put('r', 0);
+		app.letterFrequency.put('s', 0);
+		app.letterFrequency.put('t', 0);
+		app.letterFrequency.put('u', 0);
+		app.letterFrequency.put('v', 0);
+		app.letterFrequency.put('w', 0);
+		app.letterFrequency.put('x', 0);
+		app.letterFrequency.put('y', 0);
+		app.letterFrequency.put('z', 0);
 
+		app.fazTudo();
+
+		System.out.println(app.listOfKeys);
 		/*
 		 * For each iteration: 1- Iteratively divide text into columns of increasing
 		 * size (period) 2- Calculate the following for each column 2.1- Where N is the
@@ -86,19 +87,84 @@ public class App {
 		 */
 	}
 
-	// public int
+	public void fazTudo() {
 
-	public int indexOfCoincidence(String[] column) {
-		int numerator = 0;
-		for (int i = 0; i < column.length; i++) {
-			letterFrequency.put(column[i], letterFrequency.get(column[i])+1);
+		int nOfColumns = 1;
+
+		// Para numeros diferentes de colunas até o tamanho do texto
+		for (; nOfColumns < N; nOfColumns++) {
+
+			// Separa o texto em linhas e colunas de acordo
+			int nOfLines = buildMatrix(nOfColumns);
+
+			// Para cada coluna, conta a frequencia de cada letra e armazena
+			// Calcula o indexOfCoincidence() de cada coluna e adicona em um array
+
+			List<Double> eachColumnsFrequency = new ArrayList<>();
+
+			for (int i = 0; i < nOfColumns; i++) {
+				// letterFrequency = new HashMap<>();
+				for (int j = 0; j < nOfLines; j++) {
+					try {
+						matrix.get(j).get(i);
+					} catch ( IndexOutOfBoundsException e ) {
+					    break;
+					}
+					letterFrequency.put(matrix.get(j).get(i), letterFrequency.get(matrix.get(j).get(i)) + 1);
+
+				}
+				// Calcula IndexOfCoincidence da coluna e poe resultado no array de Key
+				eachColumnsFrequency.add(indexOfCoincidence());
+			}
+
+			// Calcula a média do índice de frequencia das colunas e cria objeto Key
+			double somaIOC = 0;
+			for (Double IOC : eachColumnsFrequency) {
+				somaIOC = +IOC;
+			}
+			double avg = somaIOC / eachColumnsFrequency.size();
+			
+			listOfKeys.add(new Key(nOfColumns, avg));
+			//System.out.println("List of Keys n" + count++ + " " + listOfKeys);
 		}
+	}
+
+	public double indexOfCoincidence() {
+		int numerator = 0;
 		for (int i = 0; i < alphabet.length; i++) {
 			numerator += letterFrequency.get(alphabet[i]) * (letterFrequency.get(alphabet[i]) - 1);
 			letterFrequency.put(alphabet[i], 0);
 		}
 		// Retorna o índice de coicidencia de uma coluna
-		return numerator / (N * (N - 1) / alphabet.length);
+		return numerator / ((double) N * (N - 1) / alphabet.length);
+	}
+
+	public int buildMatrix(int nOfColumns) {
+		matrix = new HashMap<>();
+		int indexChar = 0;
+		int nOfLines = (int) Math.ceil((double) N / nOfColumns);
+
+		// Para cada linha da matriz com tamanho igual a quantidade de colunas
+		for (int i = 0; i < nOfLines; i++) {
+			matrix.put(i, new ArrayList<Character>());
+
+			// Para cada coluna da linha, adiciona a letra
+			for (int j = 0; j < nOfColumns; j++, indexChar++) {
+				if (indexChar >= N)
+					break;
+				matrix.get(i).add(text.charAt(indexChar));
+			}
+		}
+		return nOfLines;
+	}
+
+	public void printMatrix() {
+		for (Map.Entry<Integer, ArrayList<Character>> entry : matrix.entrySet()) {
+			for (Character c : entry.getValue()) {
+				System.out.print(c + ", ");
+			}
+			System.out.println("\n");
+		}
 	}
 
 	public void readFile(File file) {
