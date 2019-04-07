@@ -5,7 +5,7 @@ public class Key {
 	private int keyLength;
 	private double indexOfCoincidence;
 	private double difIndexOfCoincidence;
-	private static final double IOCpt = 0.727;
+	private static final double IOCpt = 0.0727;
 
 	public Key(int keyLength, double indexOfCoincidence) {
 		this.keyLength = keyLength;
