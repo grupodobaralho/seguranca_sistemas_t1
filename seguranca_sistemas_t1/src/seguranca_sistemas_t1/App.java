@@ -5,15 +5,14 @@ package seguranca_sistemas_t1;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.swing.plaf.synth.SynthSeparatorUI;
 
 /**
  * @author Israel-PC Fontes: https://www.youtube.com/watch?v=Ge_mreVqVC4
@@ -25,7 +24,10 @@ public class App {
 	private static App app = new App();
 	private StringBuilder sb = new StringBuilder();
 
-	//
+	// Arquivo a ser lido
+	private String filename = "DemCifrado.txt";
+
+	// Alfabeto da lingua portuguesa
 	private Character[] alphabet = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
 			'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' };
 
@@ -47,9 +49,9 @@ public class App {
 	// Matriz da cifra de Vigenere para conversao
 	private Map<Character, ArrayList<Character>> vigenereChiperTable = new HashMap<>();
 
-	private double[] PTLetterFrequency = { 0.1463, 0.0104, 0.0388, 0.0499, 0.1257, 0.0102, 0.0130, 0.0128, 0.0618,
-			0.0040, 0.0002, 0.0278, 0.0474, 0.0505, 0.1073, 0.0252, 0.0120, 0.0653, 0.0781, 0.0434, 0.0463, 0.0167,
-			0.0001, 0.0021, 0.0001, 0.0047 };
+	private double[] PTLetterFrequency = { 0.14634, 0.01043, 0.03882, 0.04992, 0.12570, 0.01023, 0.01303, 0.00781, 0.06186,
+			0.00397, 0.00015, 0.02779, 0.04738, 0.04446, 0.09735, 0.02523, 0.01204, 0.06530, 0.06805, 0.04336, 0.03639, 0.01575,
+			0.00037, 0.00253, 0.00006, 0.00470 };
 
 	private double[] USLetterFrequency = { 0.082, 0.014, 0.028, 0.038, 0.131, 0.029, 0.020, 0.053, 0.064, 0.001, 0.004,
 			0.034, 0.025, 0.071, 0.080, 0.020, 0.001, 0.068, 0.061, 0.105, 0.025, 0.009, 0.015, 0.002, 0.020, 0.001 };
@@ -60,7 +62,7 @@ public class App {
 	public static void main(String[] args) {
 
 		// app.readFile(new File(args[0]));
-		app.readFile(new File("DemCifrado2.txt"));
+		app.readFile(new File(app.filename));
 
 		app.N = app.text.length();
 
@@ -83,45 +85,36 @@ public class App {
 //			e.printStackTrace();
 //		}
 
-		app.fazTudo();
+		 app.fazTudo();
 
-		int keyLength = app.listOfKeys.getKey(0).getKeyLength();
-		// System.out.println(keyLength);
-
+		 //int keyLength = app.listOfKeys.getKey(0).getKeyLength();
+		 int keyLength = 7;
 		int nOfLines = app.buildMatrix(keyLength);
 
-		//app.buildShiftMatrix(keyLength);		
-		
 		StringBuilder column = new StringBuilder();
+		app.vigenereChiperTable();
+		//System.out.println(app.vigenereChiperTable);
+
+		StringBuilder key = new StringBuilder();
 		for(int i=0; i<keyLength; i++) {
-			for(int j=0; j< app.matrix.size(); j++) {
-				System.out.println(column.append(app.matrix.get(j)));
-				try {					
+			column = new StringBuilder();
+			for(int j=0; j< app.matrix.size(); j++) {				
+				try {	
+					column.append(app.matrix.get(j).get(i));
 				} catch (IndexOutOfBoundsException e) {
 					
 				}
 			}
-			System.out.println(" se liga "+column.toString());
-		}
-		for (Map.Entry<Integer, ArrayList<Character>> entry : app.matrix.entrySet()) {
-			for (Character c : entry.getValue()) {
-				System.out.print(c + ", ");
-			}
-			System.out.println("\n");
-		}
-		
-		
-		for (int i = 0; i < keyLength; i++) {
-			app.letterFrequency = new HashMap<>();
-			
-			for (int j = 0; j < app.alphabet.length; j++) {
-				app.letterFrequency.put(app.alphabet[j], 0);
-			}
-			
-			app.calculateFrequency(nOfLines, i);
-			System.out.println(app.letterFrequency);
-			//System.out.println(app.calculateXSquare2());
-		}
+			System.out.println("THE COLUMN: "+ column);
+			//System.out.println(column.toString());
+			//System.out.println(app.getKeyLetter(column.toString()));
+			key.append(app.getKeyLetter(column.toString()));		
+		}	
+		System.out.println(key.toString());
+
+//		column.append(
+//				"aoljhlzhyjpwolypzvulvmaollhysplzaruvduhukzptwslzajpwolyzpapzhafwlvmzbizapabapvujpwolypudopjolhjoslaalypuaolwshpualeapzzopmalkhjlyahpuubtilyvmwshjlzkvduaolhswohila");
+//		app.getKeyLetter(column.toString());
 
 		/*
 		 * For each iteration: 1- Iteratively divide text into columns of increasing
@@ -133,27 +126,69 @@ public class App {
 		 * each column using frequency analysis and the correlation of frequency
 		 */
 	}
+	
 
-	public void calculateFrequency(int nOfLines, int column) {
-
-		for (int j = 0; j < nOfLines; j++) {
-			try {
-				app.matrix.get(j).get(column);
-			} catch (IndexOutOfBoundsException e) {
+	public String shiftLetters(Character c, String column) {
+		StringBuilder newColumn = new StringBuilder();
+		ArrayList<Character> ac = vigenereChiperTable.get(c);
+		int indexAlphabet = 0;
+		for(int i=0; i< column.length(); i++) {
+//			for(int j=0; j<alphabet.length; j++) {
+//				if(alphabet[j]==column.charAt(i)) {
+//					indexAlphabet = j;
+//					break;
+//				}				
+//			}
+			for(int j=0; j<ac.size(); j++) {
+			if(ac.get(j)==column.charAt(i)) {
+				indexAlphabet = j;
 				break;
-			}
-			app.letterFrequency.put(app.matrix.get(j).get(column),
-					app.letterFrequency.get(app.matrix.get(j).get(column)) + 1);
+			}				
 		}
-		//System.out.println(app.letterFrequency);
-		// System.out.println(app.calculateXSquare2());
+			newColumn.append(alphabet[indexAlphabet]);			
+		}
+		System.out.println(c + " - "+ newColumn);
+		return newColumn.toString();
+		
+	}
+
+	public Character getKeyLetter(String column) {
+		double sumValues = 0;
+		String analizingColumn = column;
+		Map<Character, Double> chiSquaredMap = new HashMap<>();	
+		System.out.println( "a - " + column);
+		for (int i = 1; i < alphabet.length; i++) {
+			countLetterFreq(analizingColumn);			
+			for (int j=0; j<alphabet.length; j++) {
+				double ci = letterFrequency.get(alphabet[j]);
+				double ei = PTLetterFrequency[j] * analizingColumn.length();
+				sumValues += Math.pow(ci - ei, 2) / ei;
+			}
+			System.out.println(alphabet[i-1] + " " + sumValues);
+			//System.out.println(analizingColumn);
+			chiSquaredMap.put(alphabet[i-1], sumValues);
+			analizingColumn = shiftLetters(alphabet[i] , column);
+			sumValues = 0;		
+		}
+		
+		Character leastValueC = new Character('1');
+		Double leastValue = new Double(Double.MAX_VALUE);
+		for(Character key : chiSquaredMap.keySet()) {
+			if(leastValue > chiSquaredMap.get(key)) {
+				leastValueC = key;
+				leastValue = chiSquaredMap.get(key);
+			}
+		}
+		System.out.println("Char: " + leastValueC);
+		System.out.println("Value: " + leastValue);
+		return leastValueC;
 
 	}
 
 	public void fazTudo() {
 
 		// Para numeros diferentes de colunas ateh o tamanho do texto
-		for (int nOfColumns = 1; nOfColumns < N; nOfColumns++) {
+		for (int nOfColumns = 1; nOfColumns < N / 10; nOfColumns++) {
 
 			// Para cada coluna, conta a frequencia de cada letra e armazena
 			// Calcula o indexOfCoincidence() de cada coluna e adicona em um array
@@ -187,121 +222,13 @@ public class App {
 		}
 	}
 
-	public void buildShiftMatrix(int keyLength) {
-		// NDaColuna por valores de X^2 para cada letra do alfabeto
-		Map<Integer, ArrayList<Double>> shiftMatrix = new HashMap<>();
-
-		for (int i = 0; i < keyLength; i++) {
-			shiftMatrix.put(i, new ArrayList<Double>());
-			for (int j = 0; j < alphabet.length; j++) {
-
-			}
+	public void countLetterFreq(String column) {
+		for (int i = 0; i < alphabet.length; i++) {
+			letterFrequency.put(alphabet[i], 0);
 		}
-	}
-
-//	public double calculateXSquare() {
-//		double fi = 0;
-//		double Fi = 0;
-//		double sum = 0;
-//		for (int i = 0; i < alphabet.length; i++) {
-//			if (letterFrequency.get(alphabet[i]) > 0) {
-//				if(i != 2) {
-//
-//				fi = letterFrequency.get(alphabet[i]) / 10.0;
-//				System.out.println(fi);
-//				Fi = USLetterFrequency[i];
-//				double resp = Math.pow((fi - Fi), 2) / Fi;
-//				sum += Math.pow((fi - Fi), 2) / Fi;
-//				}
-//				System.out.println("(#fi:# " + fi + " - #Fi:# " + Fi + ") / " + Fi);
-//				//System.out.println("resp: " + resp);
-//				System.out.println("sum: " + sum);
-//				letterFrequency.put(alphabet[i], 0);
-//			}
-//		}
-//		return sum;
-//	}
-
-	public double calculateXSquare2() {
-		for (int j = 0; j < alphabet.length; j++) {
-			double sum = 0;
-			double fi = 0;
-			for (int i = 0; i < text.length(); i++) {
-				if (text.charAt(i) == alphabet[j])
-					fi++;
-			}
-			System.out.println(alphabet[j] + " fi: " + fi);
-
-			double Fi = text.length() * USLetterFrequency[j];
-
-			System.out.println(alphabet[j] + " Fi: " + Fi + " UFLF: " + USLetterFrequency[j]);
-			sum += Math.pow(fi - Fi, 2) / Fi;
-			System.out.println(j + "" + sum);
+		for (int i = 0; i < column.length(); i++) {
+			letterFrequency.put(column.charAt(i), letterFrequency.get(column.charAt(i)) + 1);
 		}
-		return 0;
-
-//		private static char setMostCommonLetter(String column) {
-//	        cypher.clear();
-//	        int higherFreq = 0;
-//	        String commonLetter = "";
-//	        char keyLetter = ' ';
-//	        double lowerChiSquad = Double.POSITIVE_INFINITY;
-//	        int count = column.length();
-//
-//	        HashMap<Character, Integer> frequency = countLetterFreq(column);
-//	        HashMap<Character, Double> chiSquaredList = new HashMap<>();
-//
-//	        for (int i = 0; i < alphabet.length; i++) {
-//	            double chiSquared = 0;
-//	            for (String letter: MutualIndex.get().keySet()) {
-//	                char letterChar = letter.toCharArray()[0];
-//	                int letterIndex = Alphabet.get().indexOf(letterChar) + i;
-//	                if (letterIndex >= Alphabet.get().length()) {
-//	                    letterIndex = letterIndex - Alphabet.get().length();
-//	                }
-//	                if (frequency.containsKey(Alphabet.get().charAt(letterIndex))) {
-//	                    int letterFreq = frequency.get(Alphabet.get().charAt(letterIndex));
-//	                    double mtFreq = MutualIndex.get().get(letter) * column.length();
-//	                    chiSquared += Math.pow((letterFreq - mtFreq), 2) / mtFreq;
-//	                }
-//	            }
-//	            chiSquaredList.put(Alphabet.get().charAt(i), chiSquared);
-//	        }
-//
-//	        for (char letter: chiSquaredList.keySet()) {
-//	            if (chiSquaredList.get(letter) < lowerChiSquad ) {
-//	                lowerChiSquad = chiSquaredList.get(letter);
-//	                keyLetter = letter;
-//	            }
-//	        }
-//
-//	        return keyLetter;
-//	    }
-
-//		for (int i = 0; i < alphabet.length; i++) {
-//			System.out.println(letterFrequency.get(alphabet[i]));
-//			fi = letterFrequency.get(alphabet[i]) / 10.0;
-//			Fi = USLetterFrequency[i] * 10;
-//			double resp = Math.pow((fi - Fi), 2) / Fi;
-//			sum += Math.pow((fi - Fi), 2) / Fi;
-//			letterFrequency.put(alphabet[i], 0);
-//		}
-//		return sum;
-	}
-
-	public String decipher(String key) {
-		vigenereChiperTable();
-		StringBuilder decipheredText = new StringBuilder();
-		int keyPos = 0;
-		for (int i = 0; i < text.length(); i++) {
-			Character current = text.charAt(i);
-			int charIndex = vigenereChiperTable.get(key.charAt(keyPos)).indexOf(current);
-			decipheredText.append(alphabet[charIndex]);
-			keyPos++;
-			if (keyPos >= key.length())
-				keyPos = 0;
-		}
-		return decipheredText.toString();
 	}
 
 	public void vigenereChiperTable() {
