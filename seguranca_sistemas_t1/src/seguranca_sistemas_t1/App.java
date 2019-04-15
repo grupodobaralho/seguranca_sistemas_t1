@@ -5,14 +5,15 @@ package seguranca_sistemas_t1;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.swing.plaf.synth.SynthSeparatorUI;
 
 /**
  * @author Israel-PC Fontes: https://www.youtube.com/watch?v=Ge_mreVqVC4
@@ -70,30 +71,11 @@ public class App {
 			app.letterFrequency.put(app.alphabet[i], 0);
 		}
 
-		// System.out.println(app.decipher("avelino"));
-
-//		PrintWriter writer;
-//		try {
-//			writer = new PrintWriter("decipheredText.txt", "UTF-8");
-//			writer.println(app.decipher("avelino"));
-//			writer.flush();
-//		} catch (FileNotFoundException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (UnsupportedEncodingException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-
-		 app.fazTudo();
-
-		 //int keyLength = app.listOfKeys.getKey(0).getKeyLength();
-		 int keyLength = 7;
-		int nOfLines = app.buildMatrix(keyLength);
-
+		app.fazTudo();
+		int keyLength = app.listOfKeys.getKey(0).getKeyLength();
+		app.buildMatrix(keyLength);
 		StringBuilder column = new StringBuilder();
 		app.vigenereChiperTable();
-		//System.out.println(app.vigenereChiperTable);
 
 		StringBuilder key = new StringBuilder();
 		for(int i=0; i<keyLength; i++) {
@@ -112,79 +94,14 @@ public class App {
 		}	
 		System.out.println(key.toString());
 
-//		column.append(
-//				"aoljhlzhyjpwolypzvulvmaollhysplzaruvduhukzptwslzajpwolyzpapzhafwlvmzbizapabapvujpwolypudopjolhjoslaalypuaolwshpualeapzzopmalkhjlyahpuubtilyvmwshjlzkvduaolhswohila");
-//		app.getKeyLetter(column.toString());
-
-		/*
-		 * For each iteration: 1- Iteratively divide text into columns of increasing
-		 * size (period) 2- Calculate the following for each column 2.1- Where N is the
-		 * lenght of the text and n1 through nc are the frequencies (as integers) of the
-		 * c letters of the alphabet 3- Average the columns 4- The first period with an
-		 * average near or above 1.73 is likely correct, others will be near 1.0 4.1 -
-		 * Multiples of the correct period will also be high 5- Determine the shift for
-		 * each column using frequency analysis and the correlation of frequency
-		 */
+		// Parte 3 *************************************************************************************************************************
+		
+		// Decifrar o texto utilizando a chave encontrada
+		String decipheredText = app.decipher(key.toString());
+		System.out.println(decipheredText);
+		app.createFile(decipheredText);
 	}
 	
-
-	public String shiftLetters(Character c, String column) {
-		StringBuilder newColumn = new StringBuilder();
-		ArrayList<Character> ac = vigenereChiperTable.get(c);
-		int indexAlphabet = 0;
-		for(int i=0; i< column.length(); i++) {
-//			for(int j=0; j<alphabet.length; j++) {
-//				if(alphabet[j]==column.charAt(i)) {
-//					indexAlphabet = j;
-//					break;
-//				}				
-//			}
-			for(int j=0; j<ac.size(); j++) {
-			if(ac.get(j)==column.charAt(i)) {
-				indexAlphabet = j;
-				break;
-			}				
-		}
-			newColumn.append(alphabet[indexAlphabet]);			
-		}
-		System.out.println(c + " - "+ newColumn);
-		return newColumn.toString();
-		
-	}
-
-	public Character getKeyLetter(String column) {
-		double sumValues = 0;
-		String analizingColumn = column;
-		Map<Character, Double> chiSquaredMap = new HashMap<>();	
-		System.out.println( "a - " + column);
-		for (int i = 1; i < alphabet.length; i++) {
-			countLetterFreq(analizingColumn);			
-			for (int j=0; j<alphabet.length; j++) {
-				double ci = letterFrequency.get(alphabet[j]);
-				double ei = PTLetterFrequency[j] * analizingColumn.length();
-				sumValues += Math.pow(ci - ei, 2) / ei;
-			}
-			System.out.println(alphabet[i-1] + " " + sumValues);
-			//System.out.println(analizingColumn);
-			chiSquaredMap.put(alphabet[i-1], sumValues);
-			analizingColumn = shiftLetters(alphabet[i] , column);
-			sumValues = 0;		
-		}
-		
-		Character leastValueC = new Character('1');
-		Double leastValue = new Double(Double.MAX_VALUE);
-		for(Character key : chiSquaredMap.keySet()) {
-			if(leastValue > chiSquaredMap.get(key)) {
-				leastValueC = key;
-				leastValue = chiSquaredMap.get(key);
-			}
-		}
-		System.out.println("Char: " + leastValueC);
-		System.out.println("Value: " + leastValue);
-		return leastValueC;
-
-	}
-
 	public void fazTudo() {
 
 		// Para numeros diferentes de colunas ateh o tamanho do texto
@@ -222,6 +139,55 @@ public class App {
 		}
 	}
 
+	public String shiftLetters(Character c, String column) {
+		StringBuilder newColumn = new StringBuilder();
+		ArrayList<Character> ac = vigenereChiperTable.get(c);
+		int indexAlphabet = 0;
+		for(int i=0; i< column.length(); i++) {
+			for(int j=0; j<ac.size(); j++) {
+			if(ac.get(j)==column.charAt(i)) {
+				indexAlphabet = j;
+				break;
+			}				
+		}
+			newColumn.append(alphabet[indexAlphabet]);			
+		}
+		System.out.println(c + " - "+ newColumn);
+		return newColumn.toString();
+		
+	}
+
+	public Character getKeyLetter(String column) {
+		double sumValues = 0;
+		String analizingColumn = column;
+		Map<Character, Double> chiSquaredMap = new HashMap<>();	
+		for (int i = 1; i < alphabet.length; i++) {
+			countLetterFreq(analizingColumn);			
+			for (int j=0; j<alphabet.length; j++) {
+				double ci = letterFrequency.get(alphabet[j]);
+				double ei = PTLetterFrequency[j] * analizingColumn.length();
+				sumValues += Math.pow(ci - ei, 2) / ei;
+			}
+			chiSquaredMap.put(alphabet[i-1], sumValues);
+			analizingColumn = shiftLetters(alphabet[i] , column);
+			sumValues = 0;		
+		}
+		
+		Character leastValueC = new Character('1');
+		Double leastValue = new Double(Double.MAX_VALUE);
+		for(Character key : chiSquaredMap.keySet()) {
+			if(leastValue > chiSquaredMap.get(key)) {
+				leastValueC = key;
+				leastValue = chiSquaredMap.get(key);
+			}
+		}
+		System.out.println("Char: " + leastValueC);
+		System.out.println("Value: " + leastValue);
+		return leastValueC;
+
+	}
+
+
 	public void countLetterFreq(String column) {
 		for (int i = 0; i < alphabet.length; i++) {
 			letterFrequency.put(alphabet[i], 0);
@@ -250,7 +216,6 @@ public class App {
 		for (int i = 0; i < alphabet.length; i++) {
 			sum += letterFrequency.get(alphabet[i]);
 		}
-
 		for (int i = 0; i < alphabet.length; i++) {
 			double top = letterFrequency.get(alphabet[i]) * (letterFrequency.get(alphabet[i]) - 1);
 			double bottom = sum * (sum - 1);
@@ -278,14 +243,20 @@ public class App {
 		}
 		return nOfLines;
 	}
-
-	public void printMatrix() {
-		for (Map.Entry<Integer, ArrayList<Character>> entry : matrix.entrySet()) {
-			for (Character c : entry.getValue()) {
-				System.out.print(c + ", ");
-			}
-			System.out.println("\n");
+	
+	public String decipher(String key) {
+		vigenereChiperTable();
+		StringBuilder decipheredText = new StringBuilder();
+		int keyPos = 0;
+		for (int i = 0; i < text.length(); i++) {
+			Character current = text.charAt(i);
+			int charIndex = vigenereChiperTable.get(key.charAt(keyPos)).indexOf(current);
+			decipheredText.append(alphabet[charIndex]);
+			keyPos++;
+			if (keyPos >= key.length())
+				keyPos = 0;
 		}
+		return decipheredText.toString();
 	}
 
 	public void readFile(File file) {
@@ -308,24 +279,30 @@ public class App {
 		}
 		text = sb.toString();
 	}
-
-//	public double indexOfCoincidence() {
-//	int numerator = 0;
-//	for (int i = 0; i < alphabet.length; i++) {
-//		numerator += letterFrequency.get(alphabet[i]) * (letterFrequency.get(alphabet[i]) - 1);
-//		letterFrequency.put(alphabet[i], 0);
-//	}
-//	// Retorna o índice de coicidencia de uma coluna
-//	return numerator / ((double) N * (N - 1) / alphabet.length);
-//}
-
-//public double indexOfCoincidence() {
-//	int numerator = 0;
-//	for (int i = 0; i < alphabet.length; i++) {
-//		numerator += letterFrequency.get(alphabet[i]) * (letterFrequency.get(alphabet[i]) - 1);
-//		letterFrequency.put(alphabet[i], 0);
-//	}
-//
-//	return numerator / ((double) N * (N - 1));
-//}
+	
+	public void createFile(String text) {
+		PrintWriter writer;
+		try {
+			writer = new PrintWriter("decipheredText.txt", "UTF-8");
+			writer.println(text);
+			writer.flush();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	/*
+	 * 
+	 * For each iteration: 1- Iteratively divide text into columns of increasing
+	 * size (period) 2- Calculate the following for each column 2.1- Where N is the
+	 * lenght of the text and n1 through nc are the frequencies (as integers) of the
+	 * c letters of the alphabet 3- Average the columns 4- The first period with an
+	 * average near or above 1.73 is likely correct, others will be near 1.0 4.1 -
+	 * Multiples of the correct period will also be high 5- Determine the shift for
+	 * each column using frequency analysis and the correlation of frequency 
+	 */
 }
