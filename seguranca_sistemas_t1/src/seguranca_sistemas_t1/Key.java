@@ -1,5 +1,13 @@
 package seguranca_sistemas_t1;
 
+/**
+ * Classe que representa um possivel tamanho de chave. Armazena os valores de
+ * indexe de coicidencia medio encontrado, compara com a media da lingua
+ * portuguesa e atribui para futura ordenacao de chaves possiveis
+ * 
+ * @author Israel Deorce Vieira Junior
+ *
+ */
 public class Key {
 
 	private int keyLength;

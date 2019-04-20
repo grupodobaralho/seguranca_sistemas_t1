@@ -3,6 +3,13 @@ package seguranca_sistemas_t1;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Essa classe representa uma lista de chaves que ordena automaticamente da mais
+ * provavel para a menos provavel
+ * 
+ * @author Israel Deorce Vieira Junior
+ *
+ */
 public class ListOfKeys {
 	private List<Key> listOfKeys = new ArrayList<>();
 	boolean foundFirstHigh = false;
@@ -22,7 +29,7 @@ public class ListOfKeys {
 				listOfKeys.add(key);
 		}
 	}
-	
+
 	public Key getKey(int index) {
 		return listOfKeys.get(index);
 	}
